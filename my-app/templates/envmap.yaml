@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: env-map
+  namespace: {{ $.Values.namespace }}
+data:
+  MONGO_HOST: mongodb-headless

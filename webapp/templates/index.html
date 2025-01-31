@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Flask Web Page</title>
+</head>
+<body>
+    <h1>Welcome to My Flask Web Page</h1>
+    <p><strong>Name:</strong> {{ name }}</p>
+    <p><strong>Project Name:</strong> {{ project_name }}</p>
+    <p><strong>Version:</strong> {{ version }}</p>
+    <p><strong>Hostname:</strong> {{ hostname }}</p>
+    <p><strong>Current Date:</strong> {{ current_date }}</p>
+    <p><strong>Connexions history:</strong>
+    <ul>
+        {% for h in history %}
+        <li>{{ h }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

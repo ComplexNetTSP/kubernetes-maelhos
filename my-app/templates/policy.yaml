@@ -1,0 +1,23 @@
+{{- range .Values.statefullapps }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: perm-to-{{ .name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .name }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          perm: accessDB
+    ports:
+    - protocol: TCP
+      port: {{ .port }}
+{{- end }}

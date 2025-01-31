@@ -1,0 +1,40 @@
+replicaCount: 1
+namespace: mhostettler
+
+webapps:
+  - name: webapp
+    image: gmogoat/webapp:latest
+    port: 5000
+    livenessPath: /
+    env: env-map
+    ingress:
+      hostBase: webdb
+      path: /
+    perms:
+      - accessDB
+  - name: webpoor
+    image: gmogoat/webapp:latest
+    port: 5000
+    livenessPath: /
+    env: env-map
+    ingress:
+      hostBase: webpoor
+      path: /
+  - name: webappnodb
+    image: gmogoat/webappnodb:latest
+    port: 5000
+    livenessPath: /
+    env: env-map
+    ingress:
+      hostBase: webnodb
+      path: /
+
+statefullapps:
+  - name: mongodb
+    image: mongo:latest
+    port: 27017
+
+service:
+  type: ClusterIP
+
+resources: {}

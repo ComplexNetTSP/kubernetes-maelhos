@@ -1,0 +1,25 @@
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp-ingress
+  namespace: {{ $.Values.namespace }}
+  labels:
+    app: webapp
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  {{- range .Values.webapps }}
+  - host: "{{ .ingress.hostBase }}.{{ $.Values.namespace }}.net4255.luxbulb.org"
+    http:
+      paths:
+      - path: {{ .ingress.path }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .name }}
+            port:
+              number: {{ .port }}
+  {{- end }}

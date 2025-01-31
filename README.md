@@ -30,8 +30,8 @@ On your own computer install the following software:
     ```
     * Create & enter your virtual python environment:
     ```bash
-    conda create -n [env-name]
-    conda activate [env-name]
+    conda create -n kube
+    conda activate kube
     ```
     * Install pip in your env:
     ```bash

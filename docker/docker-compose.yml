@@ -1,0 +1,30 @@
+
+services:
+  webapp:
+    image: "gmogoat/webapp:latest"
+    environment:
+      - MONGO_HOST=mongodb
+    depends_on:
+      - mongodb
+
+  webappnodb:
+    image: "gmogoat/webappnodb:latest"
+
+  nginx:
+    image: "gmogoat/nginx:latest"
+    ports:
+      - "8080:80"
+    depends_on:
+      - webapp
+      - webappnodb
+
+  mongodb:
+    image: "mongo:latest"
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+
+volumes:
+  mongodb-data:

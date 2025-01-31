@@ -1,0 +1,89 @@
+
+{{- range .Values.webapps }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  replicas: {{ $.Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  template:
+    metadata:
+        labels:
+          app: {{ .name }}
+          {{- range $v := .perms }}
+          perm: {{ $v }}
+          {{- end}}
+    spec:
+      containers:
+        - image: {{ .image }}
+          {{- if .env }}
+          env:
+          envFrom:
+            - configMapRef:
+                name: {{ .env }}
+          {{- end}}
+          imagePullPolicy: Always
+          name: {{ .name }}
+          ports:
+            - containerPort: {{ .port }}
+              name: tcp
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+          livenessProbe:
+            httpGet:
+              path: {{ .livenessPath }}    
+              port: {{ .port }}             
+              scheme: HTTP         
+            initialDelaySeconds: 10 
+            periodSeconds: 5        
+            timeoutSeconds: 2       
+            failureThreshold: 3 
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .name }}-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .name }}
+  minReplicas: 1
+  maxReplicas: 10  # Change this to your max pods
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 60
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}
+spec:
+  selector:
+    app: {{ .name}}
+  ports:
+    - protocol: TCP
+      port: {{ .port }}
+      targetPort: {{ .port }}
+  type: {{ $.Values.service.type }}
+{{- end }}

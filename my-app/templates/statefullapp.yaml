@@ -1,0 +1,74 @@
+
+{{- range .Values.statefullapps }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  serviceName: "{{ .name }}-headless"
+  replicas: {{ $.Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .name }}
+  template:
+    metadata:
+        labels:
+          app: {{ .name }}
+    spec:
+      containers:
+        - image: {{ .image }}
+          {{- if .env }}
+          env:
+          envFrom:
+            - configMapRef:
+                name: {{ .env }}
+          {{- end}}
+          imagePullPolicy: Always
+          name: {{ .name }}
+          ports:
+            - containerPort: {{ .port }}
+              name: tcp
+              protocol: TCP
+          resources:
+            limits:
+              cpu: 200m
+              memory: 800Mi
+            requests:
+              cpu: 100m
+              memory: 800Mi
+          livenessProbe:
+            tcpSocket:      
+              port: {{ .port }}                   
+            initialDelaySeconds: 10 
+            periodSeconds: 5        
+            timeoutSeconds: 2       
+            failureThreshold: 3 
+          volumeMounts:
+            - name: {{ .name }}-storage
+              mountPath: /data/db
+  volumeClaimTemplates: # i hate you
+  - metadata:
+      name: {{ .name }}-storage
+      namespace: {{ $.Values.namespace }}
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 700Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}-headless
+spec:
+  clusterIP: None # Headless service
+  selector:
+    app: {{ .name}}
+  ports:
+    - protocol: TCP
+      port: {{ .port }}
+      targetPort: {{ .port }}
+{{- end }}
