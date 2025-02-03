@@ -4,4 +4,4 @@ metadata:
   name: env-map
   namespace: {{ $.Values.namespace }}
 data:
-  MONGO_HOST: mongodb-headless
+  MONGO_HOST: mongodb-0,mongodb-1,mongodb-2

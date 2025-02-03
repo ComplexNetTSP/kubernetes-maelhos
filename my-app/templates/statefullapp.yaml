@@ -8,7 +8,7 @@ metadata:
   namespace: {{ $.Values.namespace }}
 spec:
   serviceName: "{{ .name }}-headless"
-  replicas: {{ $.Values.replicaCount }}
+  replicas: {{ .replicas }}
   selector:
     matchLabels:
       app: {{ .name }}
@@ -16,6 +16,7 @@ spec:
     metadata:
         labels:
           app: {{ .name }}
+          perm: accessDB
     spec:
       containers:
         - image: {{ .image }}
@@ -25,6 +26,15 @@ spec:
             - configMapRef:
                 name: {{ .env }}
           {{- end}}
+          command:
+            - "mongod"
+            - "--replSet"
+            - "rs0"
+            - "--bind_ip_all"
+            - "--port"
+            - "{{ .port }}"
+            - "--dbpath"
+            - "/data/db"
           imagePullPolicy: Always
           name: {{ .name }}
           ports:
@@ -34,10 +44,10 @@ spec:
           resources:
             limits:
               cpu: 200m
-              memory: 800Mi
+              memory: 350Mi
             requests:
               cpu: 100m
-              memory: 800Mi
+              memory: 350Mi
           livenessProbe:
             tcpSocket:      
               port: {{ .port }}                   
@@ -56,13 +66,14 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 700Mi
+          storage: 650Mi
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ .name }}-headless
+  namespace: {{ $.Values.namespace }}
 spec:
   clusterIP: None # Headless service
   selector:
